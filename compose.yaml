@@ -1,0 +1,91 @@
+x-python-service: &python-service
+  build: .
+  environment:
+    OLLAMA_URL: http://ollama:11434
+    OLLAMA_MODEL: qwen3:0.6b
+    MLFLOW_TRACKING_URI: http://mlflow:5000
+    MLFLOW_ENABLE_ASYNC_TRACE_LOGGING: "false"
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.28.4
+    environment:
+      MP_DATABASE: /data/mailpit.db
+      MP_DISABLE_VERSION_CHECK: "true"
+    ports:
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+    volumes:
+      - mailpit-data:/data
+    healthcheck:
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  ollama:
+    image: ollama/ollama:0.13.5
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v3.18.0
+    environment:
+      MLFLOW_SERVER_ENABLE_JOB_EXECUTION: "false"
+    command:
+      - mlflow
+      - server
+      - --host=0.0.0.0
+      - --port=5000
+      - --workers=1
+      - --backend-store-uri=sqlite:////data/mlflow.db
+      - --artifacts-destination=/data/artifacts
+      - --allowed-hosts=mlflow:5000,localhost:5000,127.0.0.1:5000
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - mlflow-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "from urllib.request import urlopen; urlopen('http://127.0.0.1:5000/health', timeout=2)"
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 20s
+
+  verify:
+    <<: *python-service
+    command: ["pytest", "-q", "-s", "tests/test_startup.py"]
+    depends_on:
+      mailpit:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      mlflow:
+        condition: service_healthy
+
+  app:
+    <<: *python-service
+    command: ["sleep", "infinity"]
+    volumes:
+      - ./src:/workspace/src
+      - ./tests:/workspace/tests
+    depends_on:
+      verify:
+        condition: service_completed_successfully
+
+# All services communicate on the project's default Compose network.
+volumes:
+  mailpit-data:
+  ollama-data:
+  mlflow-data:

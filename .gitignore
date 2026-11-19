@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+.env
+site/
+mlruns/
+mlartifacts/
+*.db
+*.db-shm
+*.db-wal
