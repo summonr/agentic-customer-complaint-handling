@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Run utility unit tests
+        run: docker compose run --rm --build --no-deps verify pytest -q tests/unit
       - name: Build and start the stack
         run: docker compose up -d --build --wait --wait-timeout 480
       - name: Verify background routing

@@ -73,7 +73,13 @@ Start with the [LangGraph workflow](src/agent/graph.py). Its [tools](src/agent/t
 
 ## Contributing
 
-Work on a feature branch and open a pull request into `main`. Merging requires a passing **Compose smoke tests** check and one teammate's approval. The check builds the stack, verifies Qwen and the triage graph, and sends a synthetic complaint to confirm the background worker delivers it to Manual Review.
+Work on a feature branch and open a pull request into `main`. Merging requires a passing **Compose smoke tests** check and one teammate's approval. CI runs utility unit tests, then verifies Qwen, the triage graph, and background delivery to Manual Review.
+
+Run the utility tests without starting the stack. They use fake Mailpit and SMTP responses.
+
+```bash
+docker compose run --rm --build --no-deps verify pytest -q tests/unit
+```
 
 ## Troubleshooting
 
