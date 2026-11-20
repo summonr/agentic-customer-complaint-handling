@@ -71,10 +71,14 @@ When you're done, run `docker compose down`. Your emails, model, and traces rema
 
 Start with the [LangGraph workflow](src/agent/graph.py). Its [tools](src/agent/tools.py) are `detection`, which finds the complaint in Central, and `classify`, which currently sends every complaint to Manual Review. The [worker](src/agent/worker.py) runs the graph for each pending complaint, and the [Mailpit client](src/utilities/mailpit.py) handles API calls.
 
+## Contributing
+
+Work on a feature branch and open a pull request into `main`. Merging requires a passing **Compose smoke tests** check and one teammate's approval. The check builds the stack, verifies Qwen and the triage graph, and sends a synthetic complaint to confirm the background worker delivers it to Manual Review.
+
 ## Troubleshooting
 
 - Check the routing worker with `docker compose logs app`.
-- Rerun the startup checks with `docker compose exec app pytest -q -s`.
+- Rerun the tests against the running stack with `docker compose exec app pytest -q -s`.
 - If a host port is already in use, free port 1025, 5000, 8025–8029, or 11434 as reported by Compose, then run the startup command again.
 
 ## Engineering responsibilities

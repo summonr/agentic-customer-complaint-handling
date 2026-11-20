@@ -46,8 +46,8 @@ def find_message(mailbox: Mailbox, rfc_message_id: str) -> dict | None:
     )
 
 
-def wait_for_message(mailbox: Mailbox, rfc_message_id: str) -> dict:
-    deadline = monotonic() + 10
+def wait_for_message(mailbox: Mailbox, rfc_message_id: str, *, timeout: float = 10) -> dict:
+    deadline = monotonic() + timeout
     while monotonic() < deadline:
         if message := find_message(mailbox, rfc_message_id):
             return message

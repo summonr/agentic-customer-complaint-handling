@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  compose-smoke-tests:
+    name: Compose smoke tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and start the stack
+        run: docker compose up -d --build --wait --wait-timeout 480
+      - name: Verify background routing
+        run: docker compose exec -T app pytest -q tests/test_worker.py
+      - name: Show service logs
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --no-color
+      - name: Tear down the test stack
+        if: always()
+        run: docker compose down --volumes
