@@ -1,0 +1,23 @@
+From: Jamie Lee <jamie@demo.test>
+To: complaints@demo.test
+Subject: I need help with a duplicate charge
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="complaint-with-json"
+
+--complaint-with-json
+Content-Type: text/plain; charset="utf-8"
+
+Hello,
+
+I think I was charged twice for my order. Could someone check the charges and let me know how to get this fixed? I've attached a JSON file for reference.
+
+Thanks,
+Jamie
+
+--complaint-with-json
+Content-Type: application/json; name="details.json"
+Content-Disposition: attachment; filename="details.json"
+Content-Transfer-Encoding: base64
+
+e30=
+--complaint-with-json--

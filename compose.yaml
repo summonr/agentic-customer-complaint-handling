@@ -6,22 +6,81 @@ x-python-service: &python-service
     MLFLOW_TRACKING_URI: http://mlflow:5000
     MLFLOW_ENABLE_ASYNC_TRACE_LOGGING: "false"
 
+x-mailpit-environment: &mailpit-environment
+  MP_DATABASE: /data/mailpit.db
+  MP_DISABLE_VERSION_CHECK: "true"
+  MP_IGNORE_DUPLICATE_IDS: "true"
+  MP_TAGS_DISABLE: "plus-addresses,x-tags"
+
+x-mailpit: &mailpit
+  image: axllent/mailpit:v1.28.4
+  healthcheck:
+    test: ["CMD", "/mailpit", "readyz"]
+    interval: 5s
+    timeout: 3s
+    retries: 12
+
 services:
   mailpit:
-    image: axllent/mailpit:v1.28.4
+    <<: *mailpit
     environment:
-      MP_DATABASE: /data/mailpit.db
-      MP_DISABLE_VERSION_CHECK: "true"
+      <<: *mailpit-environment
+      MP_LABEL: Central
+      MP_SMTP_ALLOWED_RECIPIENTS: "(?i)^complaints@demo[.]test$$"
+      MP_SMTP_RELAY_HOST: mailpit-review
+      MP_SMTP_RELAY_PORT: "1025"
+      MP_SMTP_RELAY_ALLOWED_RECIPIENTS: "(?i)^review@demo[.]test$$"
+      MP_SMTP_RELAY_PRESERVE_MESSAGE_IDS: "true"
     ports:
       - "127.0.0.1:8025:8025"
       - "127.0.0.1:1025:1025"
     volumes:
-      - mailpit-data:/data
-    healthcheck:
-      test: ["CMD", "/mailpit", "readyz"]
-      interval: 5s
-      timeout: 3s
-      retries: 12
+      - mailpit-central-data:/data
+
+  mailpit-review:
+    <<: *mailpit
+    environment:
+      <<: *mailpit-environment
+      MP_LABEL: Manual Review
+      MP_SMTP_ALLOWED_RECIPIENTS: "(?i)^review@demo[.]test$$"
+    ports:
+      - "127.0.0.1:8026:8025"
+    volumes:
+      - mailpit-review-data:/data
+
+  # Keep the service and volume names so one Compose update reuses the existing inboxes.
+  mailpit-team1:
+    <<: *mailpit
+    environment:
+      <<: *mailpit-environment
+      MP_LABEL: Billing
+      MP_SMTP_ALLOWED_RECIPIENTS: "(?i)^billing@demo[.]test$$"
+    ports:
+      - "127.0.0.1:8027:8025"
+    volumes:
+      - mailpit-team1-data:/data
+
+  mailpit-team2:
+    <<: *mailpit
+    environment:
+      <<: *mailpit-environment
+      MP_LABEL: Orders & Delivery
+      MP_SMTP_ALLOWED_RECIPIENTS: "(?i)^orders@demo[.]test$$"
+    ports:
+      - "127.0.0.1:8028:8025"
+    volumes:
+      - mailpit-team2-data:/data
+
+  mailpit-team3:
+    <<: *mailpit
+    environment:
+      <<: *mailpit-environment
+      MP_LABEL: Technical Support
+      MP_SMTP_ALLOWED_RECIPIENTS: "(?i)^technical@demo[.]test$$"
+    ports:
+      - "127.0.0.1:8029:8025"
+    volumes:
+      - mailpit-team3-data:/data
 
   ollama:
     image: ollama/ollama:0.13.5
@@ -65,9 +124,17 @@ services:
 
   verify:
     <<: *python-service
-    command: ["pytest", "-q", "-s", "tests/test_startup.py"]
+    command: ["pytest", "-q", "-s", "tests/test_startup.py", "tests/test_triage.py"]
     depends_on:
       mailpit:
+        condition: service_healthy
+      mailpit-review:
+        condition: service_healthy
+      mailpit-team1:
+        condition: service_healthy
+      mailpit-team2:
+        condition: service_healthy
+      mailpit-team3:
         condition: service_healthy
       ollama:
         condition: service_healthy
@@ -76,16 +143,22 @@ services:
 
   app:
     <<: *python-service
-    command: ["sleep", "infinity"]
+    command: ["python", "-m", "agent.worker"]
+    restart: unless-stopped
     volumes:
       - ./src:/workspace/src
       - ./tests:/workspace/tests
+      - ./sample_emails:/workspace/sample_emails:ro
     depends_on:
       verify:
         condition: service_completed_successfully
 
 # All services communicate on the project's default Compose network.
 volumes:
-  mailpit-data:
+  mailpit-central-data:
+  mailpit-review-data:
+  mailpit-team1-data:
+  mailpit-team2-data:
+  mailpit-team3-data:
   ollama-data:
   mlflow-data:
