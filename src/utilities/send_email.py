@@ -26,6 +26,28 @@ def submit_to_central(message: EmailMessage) -> None:
         smtp.send_message(message, to_addrs=[ADDRESSES["central"]])
 
 
+def send_complaint(subject: str, body: str) -> str:
+    """Send a custom email complaint to Central mailbox.
+
+    Args:
+        subject: Email subject
+        body: Email body
+
+    Returns:
+        RFC Message ID of the sent email
+    """
+    message = EmailMessage()
+    message["Subject"] = subject
+    message["From"] = "customer@example.com"
+    message["To"] = ADDRESSES["central"]
+    rfc_message_id = make_msgid(domain="demo.test")
+    message["Message-ID"] = rfc_message_id
+    message["Date"] = formatdate()
+    message.set_content(body)
+    submit_to_central(message)
+    return rfc_message_id
+
+
 def send_sample(sample: Path) -> str:
     message = BytesParser(policy=SMTP).parsebytes(sample.read_bytes())
     rfc_message_id = make_msgid(domain="demo.test")

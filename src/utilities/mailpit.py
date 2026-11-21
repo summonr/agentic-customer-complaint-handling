@@ -9,11 +9,20 @@ from typing import Literal
 
 import httpx
 
-Mailbox = Literal["central", "review"]
-ADDRESSES: dict[Mailbox, str] = {"central": "complaints@demo.test", "review": "review@demo.test"}
+Mailbox = Literal["central", "review", "billing", "orders", "technical"]
+ADDRESSES: dict[Mailbox, str] = {
+    "central": "complaints@demo.test",
+    "review": "review@demo.test",
+    "billing": "billing@demo.test",
+    "orders": "orders@demo.test",
+    "technical": "technical@demo.test",
+}
 API_URLS: dict[Mailbox, str] = {
     "central": os.getenv("MAILPIT_URL", "http://mailpit:8025"),
     "review": os.getenv("MAILPIT_REVIEW_URL", "http://mailpit-review:8025"),
+    "billing": os.getenv("MAILPIT_BILLING_URL", "http://mailpit-team1:8025"),
+    "orders": os.getenv("MAILPIT_ORDERS_URL", "http://mailpit-team2:8025"),
+    "technical": os.getenv("MAILPIT_TECHNICAL_URL", "http://mailpit-team3:8025"),
 }
 
 
