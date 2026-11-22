@@ -7,12 +7,8 @@ class Team(TypedDict):
     email: str
     description: str
 
+# Main teams for classification
 TEAMS = {
-    "review": Team(
-        name="Manual Review",
-        email="review@demo.test",
-        description="General complaints that need human review"
-    ),
     "billing": Team(
         name="Billing",
         email="billing@demo.test",
@@ -28,4 +24,12 @@ TEAMS = {
         email="technical@demo.test",
         description="Product bugs, technical issues, feature requests"
     ),
+}
+
+# Fallback team for uncertain/unclassified complaints
+FALLBACK_TEAM = "review"
+FALLBACK_TEAM_INFO = {
+    "name": "Manual Review",
+    "email": "review@demo.test",
+    "description": "Complaints that couldn't be classified automatically"
 }

@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-slim as base
 COPY --from=ghcr.io/astral-sh/uv:0.10.10 /uv /usr/local/bin/uv
 
 WORKDIR /workspace
@@ -11,3 +11,6 @@ RUN uv sync --locked
 
 COPY src ./src
 COPY tests ./tests
+
+FROM base as verification
+RUN uv sync --locked --group verification
