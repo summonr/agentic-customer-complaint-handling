@@ -18,7 +18,7 @@ def main() -> None:
             for message in pending_messages():
                 try:
                     result = run_triage({"rfc_message_id": message["MessageID"]})
-                    logger.info("Routed %s to Manual Review (%s).", message["ID"], result["forwarded_id"])
+                    logger.info("Routed %s to %s (%s).", message["ID"], result["team"], result["forwarded_id"])
                 except Exception:
                     logger.exception("Could not route %s. Will retry on the next check.", message["ID"])
         except Exception:

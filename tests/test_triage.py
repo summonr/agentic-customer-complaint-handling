@@ -6,7 +6,7 @@ from mlflow.entities import TraceState
 
 from agent.graph import run_triage
 from agent.tools import detection
-from utilities.mailpit import ADDRESSES, request
+from utilities.mailpit import ADDRESSES, DESTINATIONS, request
 from utilities.send_email import submit_to_central
 
 
@@ -29,18 +29,20 @@ def test_triage_preserves_attachments_and_records_the_graph():
         assert source["MessageID"].strip("<>") == rfc_message_id.strip("<>")
         assert not source["Tags"]
 
+        team = result["team"]
+        assert team in DESTINATIONS
         review_path = f"message/{result['forwarded_id']}"
-        reviewed = request("review", "GET", review_path).json()
+        reviewed = request(team, "GET", review_path).json()
         assert reviewed["MessageID"] == source["MessageID"]
         assert reviewed["Subject"] == source["Subject"]
         assert reviewed["From"] == source["From"]
         assert reviewed["To"] == source["To"]
-        assert [address["Address"] for address in reviewed["Bcc"]] == [ADDRESSES["review"]]
+        assert [address["Address"] for address in reviewed["Bcc"]] == [ADDRESSES[team]]
         assert reviewed["Text"].strip() == source["Text"].strip() == body
         assert not reviewed["Tags"]
         attachment, = reviewed["Attachments"]
         assert attachment["FileName"] == "details.json"
-        part = request("review", "GET", f"{review_path}/part/{attachment['PartID']}")
+        part = request(team, "GET", f"{review_path}/part/{attachment['PartID']}")
         assert part.content == b"{}"
 
         trace_id = mlflow.get_last_active_trace_id()
@@ -56,5 +58,5 @@ def test_triage_preserves_attachments_and_records_the_graph():
         assert detection.invoke({}) != result["message_id"]
         print(f"Mailpit forwarded the triage probe and MLflow returned trace {trace_id}.")
     finally:
-        for mailbox in ("central", "review"):
+        for mailbox in ("central", *DESTINATIONS):
             request(mailbox, "DELETE", "search", params={"query": f"subject:{probe_id}"})
