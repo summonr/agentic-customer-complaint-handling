@@ -5,7 +5,7 @@ import mlflow
 from mlflow.entities import TraceState
 
 from agent.graph import run_triage
-from agent.tools import detection
+from agent.tools import detection, pick_team
 from utilities.mailpit import ADDRESSES, DESTINATIONS, request
 from utilities.send_email import submit_to_central
 
@@ -27,10 +27,9 @@ def test_triage_preserves_attachments_and_records_the_graph():
         result = run_triage({"rfc_message_id": rfc_message_id})
         source = request("central", "GET", f"message/{result['message_id']}").json()
         assert source["MessageID"].strip("<>") == rfc_message_id.strip("<>")
-        assert not source["Tags"]
-
         team = result["team"]
         assert team in DESTINATIONS
+        assert source["Tags"] == [team]
         review_path = f"message/{result['forwarded_id']}"
         reviewed = request(team, "GET", review_path).json()
         assert reviewed["MessageID"] == source["MessageID"]
@@ -60,3 +59,14 @@ def test_triage_preserves_attachments_and_records_the_graph():
     finally:
         for mailbox in ("central", *DESTINATIONS):
             request(mailbox, "DELETE", "search", params={"query": f"subject:{probe_id}"})
+
+
+def test_classifier_tells_clear_complaints_apart():
+    complaints = {
+        "billing": ("Charged twice for one order", "My card statement shows two identical charges. Please reverse one."),
+        "orders": ("Where is my order?", "I ordered two weeks ago and the tracking page has not changed since."),
+        "technical": ("App crashes when I open settings", "Since the update the app closes every time I tap Settings."),
+    }
+    correct = sum(pick_team(*complaint) == team for team, complaint in complaints.items())
+    # The small model isn't reliable enough to demand all three, but a broken classifier gets at most one.
+    assert correct >= 2

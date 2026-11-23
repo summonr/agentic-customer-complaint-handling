@@ -7,7 +7,6 @@ from collections.abc import Iterator
 from fcntl import LOCK_EX, flock
 from time import monotonic, sleep
 from typing import Literal
-from urllib.parse import urlparse
 
 import httpx
 
@@ -26,7 +25,14 @@ API_URLS: dict[Mailbox, str] = {
     "orders": os.getenv("MAILPIT_ORDERS_URL", "http://mailpit-team2:8025"),
     "technical": os.getenv("MAILPIT_TECHNICAL_URL", "http://mailpit-team3:8025"),
 }
-DESTINATIONS: tuple[Mailbox, ...] = ("review", "billing", "orders", "technical")
+# Each destination is its own Mailpit, so each has its own SMTP server.
+SMTP_SERVERS: dict[Mailbox, str] = {
+    "review": os.getenv("MAILPIT_REVIEW_SMTP", "mailpit-review:1025"),
+    "billing": os.getenv("MAILPIT_BILLING_SMTP", "mailpit-team1:1025"),
+    "orders": os.getenv("MAILPIT_ORDERS_SMTP", "mailpit-team2:1025"),
+    "technical": os.getenv("MAILPIT_TECHNICAL_SMTP", "mailpit-team3:1025"),
+}
+DESTINATIONS: tuple[Mailbox, ...] = tuple(SMTP_SERVERS)
 
 
 def request(mailbox: Mailbox, method: str, path: str, **kwargs) -> httpx.Response:
@@ -88,15 +94,21 @@ def wait_for_routing(rfc_message_id: str, *, timeout: float = 60) -> tuple[Mailb
     raise TimeoutError(f"Message-ID {rfc_message_id} was not routed")
 
 
+def message_path(message_id: str) -> str:
+    if not re.fullmatch(r"[A-Za-z0-9_-]+", message_id) or message_id == "latest":
+        raise ValueError("Use the database ID of a Central message")
+    return f"message/{message_id}"
+
+
+def read_complaint(message_id: str) -> tuple[str, str]:
+    """Return the subject and text of a Central complaint."""
+    message = request("central", "GET", message_path(message_id)).json()
+    return message["Subject"], message["Text"]
+
+
 def pending_messages() -> Iterator[dict]:
-    """List Central messages that don't have a copy in any destination mailbox."""
-    routed = {
-        message["MessageID"].strip("<>") for mailbox in DESTINATIONS for message in messages(mailbox)
-    }
-    for message in messages("central"):
-        message_id = message["ID"]
-        if {message["MessageID"].strip("<>"), _legacy_review_message_id(message_id)}.isdisjoint(routed):
-            yield message
+    """List Central messages that haven't been tagged with a destination yet."""
+    return (message for message in messages("central") if not message["Tags"])
 
 
 def detect_email(rfc_message_id: str | None = None) -> str | None:
@@ -107,28 +119,32 @@ def detect_email(rfc_message_id: str | None = None) -> str | None:
     return message["ID"] if message else None
 
 
-def forward(message_id: str, mailbox: Mailbox = "review") -> str:
-    """Copy a Central complaint and its attachments to a destination mailbox."""
-    if not re.fullmatch(r"[A-Za-z0-9_-]+", message_id) or message_id == "latest":
-        raise ValueError("Use the database ID of a Central message")
+def forward(message_id: str, mailbox: Mailbox = "review") -> tuple[Mailbox, str]:
+    """Copy a Central complaint and its attachments to a destination mailbox.
+
+    Returns the mailbox that holds the copy, which differs from the requested one
+    when the complaint was already routed.
+    """
+    path = message_path(message_id)
     if mailbox not in DESTINATIONS:
         raise ValueError(f"Unknown destination mailbox {mailbox}")
 
     # The background worker and a manual command can pick up the same message.
     with open("/tmp/email-triage-release.lock", "a") as lock:
         flock(lock, LOCK_EX)
-        if existing := find_message("review", _legacy_review_message_id(message_id)):
-            return existing["ID"]
-
-        path = f"message/{message_id}"
         headers = request("central", "GET", f"{path}/headers").json()
         rfc_message_id = headers["Message-Id"][0]
-        if routed := find_routed(rfc_message_id):
-            return routed[1]["ID"]
+        if legacy := find_message("review", _legacy_review_message_id(message_id)):
+            routed = "review", legacy
+        else:
+            routed = find_routed(rfc_message_id)
+        if not routed:
+            raw = request("central", "GET", f"{path}/raw").content
+            host, _, port = SMTP_SERVERS[mailbox].rpartition(":")
+            with smtplib.SMTP(host, int(port), timeout=10) as smtp:
+                smtp.sendmail(ADDRESSES["central"], [ADDRESSES[mailbox]], raw)
+            routed = mailbox, wait_for_message(mailbox, rfc_message_id)
 
-        # Each mailbox is its own Mailpit, so deliver the stored email to its SMTP port.
-        raw = request("central", "GET", f"{path}/raw").content
-        host = urlparse(API_URLS[mailbox]).hostname
-        with smtplib.SMTP(host, int(os.getenv("MAILPIT_SMTP_PORT", "1025")), timeout=10) as smtp:
-            smtp.sendmail(ADDRESSES["central"], [ADDRESSES[mailbox]], raw)
-        return wait_for_message(mailbox, rfc_message_id)["ID"]
+        # Central remembers the destination, so clearing a team inbox doesn't trigger a new delivery.
+        request("central", "PUT", "tags", json={"IDs": [message_id], "Tags": [routed[0]]})
+        return routed[0], routed[1]["ID"]

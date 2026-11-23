@@ -15,4 +15,5 @@ def classify_complaint(state: TriageState) -> TriageState:
 
 
 def route_to_team(state: TriageState) -> TriageState:
-    return {"forwarded_id": mailpit.forward(state["message_id"], state["team"])}
+    team, forwarded_id = mailpit.forward(state["message_id"], state["team"])
+    return {"team": team, "forwarded_id": forwarded_id}

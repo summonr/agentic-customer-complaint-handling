@@ -42,13 +42,13 @@ Start the stack using Quick start. Open the repo in your editor and run the samp
 
 Before opening a pull request, run `docker compose exec app pytest -q` with the stack running.
 
-To measure routing accuracy on the 30 labelled complaints in [complaints.jsonl](src/verification/complaints.jsonl), run `docker compose exec app python -m verification.routing_verification`. The result is logged to MLflow under **email-triage-routing**.
+To measure routing accuracy on the labelled complaints in [complaints.jsonl](src/verification/complaints.jsonl), run `docker compose exec app python -m verification.routing_verification`. The result is logged to MLflow under **email-triage-routing**.
 
 ## How it works
 
 ### Mailpit and the email flow
 
-Mailpit captures test emails locally so you can inspect the original and the forwarded copy in your browser. The sample command sends an email to Central over SMTP. The worker checks Central every two seconds when idle, then delivers the stored email with its attachments to the chosen inbox over SMTP.
+Mailpit captures test emails locally so you can inspect the original and the forwarded copy in your browser. The sample command sends an email to Central over SMTP. The worker checks Central every two seconds when idle, then delivers the stored email with its attachments to the chosen inbox over SMTP. It tags the Central original with the destination, so an email is routed only once.
 
 | Inbox                                                                                                                    | Purpose                                   |
 | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
