@@ -11,7 +11,7 @@ import mlflow
 
 from agent.graph import run_triage
 from agent.state import TriageState
-from utilities.mailpit import ADDRESSES, wait_for_message
+from utilities.mailpit import ADDRESSES, wait_for_message, wait_for_routing
 
 SAMPLES = {
     "help": Path("sample_emails/help-request.eml"),
@@ -36,7 +36,7 @@ def send_sample(sample: Path) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Send one central inbox email to manual review.")
+    parser = argparse.ArgumentParser(description="Route one central inbox email to a team or manual review.")
     source = parser.add_mutually_exclusive_group()
     source.add_argument("message_id", nargs="?", help="Mailpit ID, or omit for the newest pending email")
     source.add_argument(
@@ -51,8 +51,8 @@ def main() -> None:
     if args.sample:
         rfc_message_id = send_sample(SAMPLES[args.sample])
         original = wait_for_message("central", rfc_message_id)
-        reviewed = wait_for_message("review", rfc_message_id)
-        print_routing(original["ID"], reviewed["ID"])
+        mailbox, routed = wait_for_routing(rfc_message_id)
+        print_routing(original["ID"], mailbox, routed["ID"])
         return
 
     state: TriageState = {}
@@ -64,12 +64,12 @@ def main() -> None:
         print("No central inbox emails are awaiting routing.")
         return
 
-    print_routing(result["message_id"], result["forwarded_id"])
+    print_routing(result["message_id"], result["team"], result["forwarded_id"])
     print(f"MLflow trace: {mlflow.get_last_active_trace_id()}")
 
 
-def print_routing(message_id: str, forwarded_id: str) -> None:
-    print(f"Routed {message_id} to {ADDRESSES['review']} (Mailpit ID {forwarded_id}).")
+def print_routing(message_id: str, mailbox: str, forwarded_id: str) -> None:
+    print(f"Routed {message_id} to {ADDRESSES[mailbox]} (Mailpit ID {forwarded_id}).")
 
 
 if __name__ == "__main__":
