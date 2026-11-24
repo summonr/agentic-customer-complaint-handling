@@ -1,0 +1,506 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI-Assisted Triage for Customer Inquiries</title>
+    <style>
+      body {
+        margin: 0;
+        color: #1e293b;
+        background: #f8fafc;
+        font: 1rem/1.65 system-ui, sans-serif;
+      }
+      main {
+        max-width: 52rem;
+        margin: auto;
+        padding: clamp(1.25rem, 5vw, 4rem) 1.25rem;
+      }
+      h1, h2, h3 {
+        line-height: 1.2;
+      }
+      h1 {
+        font-size: clamp(2rem, 6vw, 3rem);
+      }
+      h2 {
+        margin-top: 0;
+      }
+      h3 {
+        margin-bottom: 0.4rem;
+      }
+      section {
+        margin-top: 2.5rem;
+        padding-top: 1.5rem;
+      }
+      section + section {
+        border-top: 1px solid #cbd5e1;
+      }
+      a {
+        color: #075985;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+        font-size: 0.92rem;
+      }
+      th, td {
+        padding: 0.65rem;
+        text-align: left;
+        border-bottom: 1px solid #cbd5e1;
+        vertical-align: top;
+      }
+      th {
+        background: #e2e8f0;
+      }
+      .note {
+        padding: 1rem;
+        background: #eaf2f8;
+        border-left: 3px solid #075985;
+        margin: 1rem 0;
+      }
+      .muted {
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+      code {
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main>
+      <h1>AI-Assisted Triage for Customer Inquiries</h1>
+      <p>
+        Can an AI agent get routine emails to the right team faster while
+        sending unclear cases to a person?
+      </p>
+
+      <section aria-labelledby="industry-problem">
+        <h2 id="industry-problem">The industry problem</h2>
+
+        <p>
+          Customers email companies about bills, subscriptions, orders, and
+          technical issues. When those messages land in a shared inbox, someone
+          has to read each one and decide who should handle it. A wrong handoff
+          adds rework and delays the response.
+        </p>
+
+        <p>
+          McKinsey's 2026 customer care survey describes support teams facing
+          limited budgets and rising customer expectations. It also describes
+          a shift toward always-on service, with AI helping handle routine
+          tasks and people handling more complex cases.
+        </p>
+
+        <p>
+          AI could change the workload in both directions. Customers may send
+          more inquiries if AI makes them easier to draft and follow up on,
+          while better self-service could resolve some issues before an email
+          is sent. Our proof of concept tests whether automated triage can
+          maintain fast, accurate handoffs as volume rises.
+        </p>
+
+        <p>
+          <a href="mckinsey.pdf" target="_blank" rel="noopener noreferrer">
+            Read the McKinsey report (PDF, opens in a new tab)
+          </a>
+        </p>
+      </section>
+
+      <section aria-labelledby="kpis">
+        <h2 id="kpis">How we measure success</h2>
+
+        <p>
+          The evaluation considers both classification quality and the
+          operational risk of sending an inquiry to the wrong team.
+          Correctly identifying cases that need human review is particularly
+          important: not every email should be automatically routed.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>What it tells us</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Accuracy</td>
+              <td>Share of all emails assigned the expected destination.</td>
+            </tr>
+            <tr>
+              <td>Macro F1</td>
+              <td>
+                Balanced classification performance across all destination
+                categories.
+              </td>
+            </tr>
+            <tr>
+              <td>Per-class precision and recall</td>
+              <td>
+                How reliably each destination is selected and how many
+                relevant cases it captures.
+              </td>
+            </tr>
+            <tr>
+              <td>Auto-route rate</td>
+              <td>Share of emails assigned to a specialist team rather than review.</td>
+            </tr>
+            <tr>
+              <td>Incorrect auto-route rate</td>
+              <td>
+                Share of all emails incorrectly sent to a specialist team.
+                This is a key measure of routing risk.
+              </td>
+            </tr>
+            <tr>
+              <td>Review recall</td>
+              <td>
+                Share of cases expected to require human review that are
+                correctly assigned to review.
+              </td>
+            </tr>
+            <tr>
+              <td>Latency</td>
+              <td>Time taken by the classifier to produce a routing decision.</td>
+            </tr>
+            <tr>
+              <td>Consistency</td>
+              <td>
+                Whether repeated classifications of the same email produce
+                the same destination.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="muted">
+          The evaluation also examines performance by language, complexity,
+          email length, customer tone and security-related test cases.
+        </p>
+      </section>
+
+      <section aria-labelledby="business-case">
+        <h2 id="business-case">Business case</h2>
+
+        <p>
+          The potential business value comes from reducing manual sorting,
+          avoiding incorrect handoffs and allowing support teams to focus
+          their attention on cases that require human judgement.
+        </p>
+
+        <h3>Potential value drivers</h3>
+        <ul>
+          <li>Less time spent manually reading and categorising incoming emails.</li>
+          <li>Fewer incorrect transfers between support teams.</li>
+          <li>Faster assignment of routine customer inquiries.</li>
+          <li>More consistent handling of ambiguous or sensitive cases.</li>
+          <li>Scalable processing as inquiry volumes change.</li>
+        </ul>
+
+        <h3>What needs to be measured</h3>
+        <p>
+          A quantified business case requires operational data such as email
+          volumes, current handling time, labour cost, error rates, average
+          resolution time and the cost of implementing and operating the
+          solution.
+        </p>
+
+        <div class="note">
+          <strong>Current status:</strong> These are potential value drivers,
+          not yet measured savings. The proof of concept currently evaluates
+          classification performance rather than realised financial benefits.
+        </div>
+      </section>
+
+      <section aria-labelledby="proof-of-concept">
+        <h2 id="proof-of-concept">Agentic AI proof of concept</h2>
+
+        <p>
+          The proof of concept investigates an AI-assisted workflow that
+          classifies incoming customer emails and assigns them to an
+          appropriate destination. Unclear, out-of-scope or multi-topic
+          inquiries can be sent to human review rather than automatically
+          routed.
+        </p>
+
+        <h3>Routing destinations</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Destination</th>
+              <th>Typical inquiry</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Billing</td>
+              <td>Invoices, payments, disputed charges, refunds and credits.</td>
+            </tr>
+            <tr>
+              <td>Orders</td>
+              <td>Physical orders, delivery, tracking, missing or damaged items and returns.</td>
+            </tr>
+            <tr>
+              <td>Technical</td>
+              <td>Product or software faults, crashes, login and connectivity issues.</td>
+            </tr>
+            <tr>
+              <td>Review</td>
+              <td>Ambiguous, out-of-scope, sensitive or cross-department cases requiring human judgement.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Current technical setup</h3>
+        <ul>
+          <li>Local inference through Ollama.</li>
+          <li>Qwen3 0.6B language model.</li>
+          <li>Structured output validation using Pydantic.</li>
+          <li>Fallback to human review when the classifier output is invalid.</li>
+          <li>Docker-based development and evaluation environment.</li>
+          <li>MLflow experiment tracking for evaluation results.</li>
+        </ul>
+
+        <h3>Evaluation approach</h3>
+        <p>
+          The original classifier (P0) is retained as the reference
+          implementation. Experimental prompt changes are evaluated
+          separately through P1, using the same expanded dataset and
+          evaluation framework.
+        </p>
+
+        <p>
+          The evaluation script measures classifier predictions. It does not
+          by itself establish successful end-to-end email delivery,
+          operational handling or business impact.
+        </p>
+      </section>
+
+      <section aria-labelledby="dataset">
+        <h2 id="dataset">Evaluation dataset: 800 synthetic emails</h2>
+
+        <p>
+          An expanded dataset of 800 synthetic customer emails was created
+          to evaluate classification quality across multiple languages,
+          inquiry types and levels of complexity.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Coverage</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Total records</td>
+              <td>800</td>
+            </tr>
+            <tr>
+              <td>Routing categories</td>
+              <td>Billing, Orders, Technical and Review (200 each)</td>
+            </tr>
+            <tr>
+              <td>Languages</td>
+              <td>English, German, French and Italian (200 each)</td>
+            </tr>
+            <tr>
+              <td>Complexity</td>
+              <td>400 straightforward, 240 ambiguous, 160 multi-intent</td>
+            </tr>
+            <tr>
+              <td>Email length</td>
+              <td>720 short and 80 long</td>
+            </tr>
+            <tr>
+              <td>Customer tone</td>
+              <td>Neutral, frustrated, urgent and threatening (200 each)</td>
+            </tr>
+            <tr>
+              <td>Security-related cases</td>
+              <td>40 cases (5% of the dataset)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p>
+          The dataset includes expected routing labels and supporting
+          metadata such as language, complexity, tone, issue type and
+          classification rationale.
+        </p>
+
+        <p>
+          <strong>Dataset version:</strong> v1.1
+        </p>
+
+        <p>
+          <a
+            href="../src/verification/complaints_800_v1.1.jsonl"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View or download the 800-email dataset (JSONL)
+          </a>
+        </p>
+
+        <p class="muted">
+          The dataset is synthetic and intended for experimentation. It is
+          not a collection of real customer emails and does not establish
+          performance on real-world customer traffic.
+        </p>
+      </section>
+
+      <section aria-labelledby="performance">
+        <h2 id="performance">Performance so far</h2>
+
+        <p>
+          The original P0 classifier is the reference point. Two P1 prompt
+          experiments have been evaluated against the expanded 800-email
+          dataset. Both produced lower classification performance than P0.
+        </p>
+
+        <h3>Experiment comparison</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>P0 reference</th>
+              <th>P1 experiment 1</th>
+              <th>P1 experiment 2</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Accuracy</td>
+              <td>81.75%</td>
+              <td>51.6%</td>
+              <td>46.0%</td>
+            </tr>
+            <tr>
+              <td>Macro F1</td>
+              <td>0.817</td>
+              <td>0.467</td>
+              <td>0.411</td>
+            </tr>
+            <tr>
+              <td>Auto-route rate</td>
+              <td>78.0%</td>
+              <td>77.1%</td>
+              <td>93.6%</td>
+            </tr>
+            <tr>
+              <td>Incorrect auto-route rate</td>
+              <td>15.38%</td>
+              <td>43.6%</td>
+              <td>53.4%</td>
+            </tr>
+            <tr>
+              <td>Review recall</td>
+              <td>76.5%</td>
+              <td>72.5%</td>
+              <td>23.0%</td>
+            </tr>
+            <tr>
+              <td>Security test success</td>
+              <td>50.0%</td>
+              <td>37.5%</td>
+              <td>37.5%</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="muted">
+          Results are from the current evaluation runs. The P1 columns
+          represent separate prompt experiments, not successive
+          improvements. The P0 reference is retained unchanged.
+        </p>
+
+        <h3>What the experiments tell us</h3>
+        <ul>
+          <li>
+            The first P1 experiment reduced accuracy by 30.15 percentage
+            points compared with P0.
+          </li>
+          <li>
+            The second P1 experiment reduced accuracy by 35.75 percentage
+            points compared with P0.
+          </li>
+          <li>
+            The second P1 experiment increased automatic routing to 93.6%,
+            but review recall fell to 23.0%. This indicates that too many
+            cases were being automatically assigned instead of being sent
+            for human review.
+          </li>
+          <li>
+            Neither experiment improved the overall balance between
+            classification quality and safe routing.
+          </li>
+        </ul>
+
+        <div class="note">
+          <strong>Current decision:</strong> P0 remains the champion
+          reference. The experimental P1 prompts are not accepted as
+          replacements.
+        </div>
+
+        <h3>Next experiment: Billing versus Orders</h3>
+        <p>
+          The next prompt refinement focuses on distinguishing financial
+          issues from physical order and delivery issues. In particular,
+          return requests should be classified as Orders unless the main
+          complaint concerns a missing refund or disputed charge.
+        </p>
+        <p>
+          This refinement is a hypothesis to test, not a demonstrated
+          improvement. Its results should be added here only after the
+          evaluation has completed.
+        </p>
+
+        <h3>Evaluation limitations</h3>
+        <ul>
+          <li>
+            The dataset is synthetic and cannot fully represent real
+            customer language or operational conditions.
+          </li>
+          <li>
+            Security-related test results are preliminary and should not
+            be interpreted as conclusive evidence of prompt-injection
+            resistance.
+          </li>
+          <li>
+            Latency measures classifier execution, not end-to-end workflow
+            processing.
+          </li>
+          <li>
+            Classification results do not establish actual email routing
+            success or realised business savings.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="next-steps">
+        <h2 id="next-steps">Next steps</h2>
+        <ol>
+          <li>Keep P0 unchanged as the reference classifier.</li>
+          <li>Continue prompt refinement in the separate P1 experiment.</li>
+          <li>Evaluate each proposed change against the same 800-email dataset.</li>
+          <li>Investigate errors by category, language and complexity.</li>
+          <li>Prioritise safe handling of ambiguous and sensitive cases.</li>
+          <li>Validate promising results with representative real-world data.</li>
+          <li>Evaluate end-to-end workflow performance and business impact.</li>
+        </ol>
+      </section>
+
+      <p class="muted">
+        Project documentation. Evaluation results should be updated as
+        further experiments are completed.
+      </p>
+    </main>
+  </body>
+</html>
