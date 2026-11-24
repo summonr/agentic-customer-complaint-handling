@@ -119,11 +119,16 @@ def detect_email(rfc_message_id: str | None = None) -> str | None:
     return message["ID"] if message else None
 
 
-def forward(message_id: str, mailbox: Mailbox = "review") -> tuple[Mailbox, str]:
+def forward(message_id: str, mailbox: Mailbox = "review", incomplete: bool = False) -> tuple[Mailbox, str]:
     """Copy a Central complaint and its attachments to a destination mailbox.
 
     Returns the mailbox that holds the copy, which differs from the requested one
     when the complaint was already routed.
+
+    Args:
+        message_id: ID of the message in Central
+        mailbox: Destination mailbox
+        incomplete: If True, adds an 'incomplete' tag to flag missing information
     """
     path = message_path(message_id)
     if mailbox not in DESTINATIONS:
@@ -146,5 +151,8 @@ def forward(message_id: str, mailbox: Mailbox = "review") -> tuple[Mailbox, str]
             routed = mailbox, wait_for_message(mailbox, rfc_message_id)
 
         # Central remembers the destination, so clearing a team inbox doesn't trigger a new delivery.
-        request("central", "PUT", "tags", json={"IDs": [message_id], "Tags": [routed[0]]})
+        tags = [routed[0]]
+        if incomplete:
+            tags.append("incomplete")
+        request("central", "PUT", "tags", json={"IDs": [message_id], "Tags": tags})
         return routed[0], routed[1]["ID"]

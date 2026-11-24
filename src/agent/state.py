@@ -8,3 +8,6 @@ class TriageState(TypedDict, total=False):
     message_id: str
     team: str
     forwarded_id: str
+    is_complete: bool
+    missing_fields: list[str]
+    present_fields: list[str]
