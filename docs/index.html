@@ -84,16 +84,16 @@
         </p>
       </section>
 
-      <section aria-labelledby="kpis">
-        <h2 id="kpis">How we measure success</h2>
-      </section>
-
-      <section aria-labelledby="business-case">
-        <h2 id="business-case">Business case</h2>
-      </section>
-
-      <section aria-labelledby="proof-of-concept">
-        <h2 id="proof-of-concept">Agentic AI proof of concept</h2>
+      <section aria-labelledby="idea">
+        <h2 id="idea">The idea so far</h2>
+        <p>
+          Give customer inquiries a single entry point. The agent would suggest
+          a destination such as Billing, Orders &amp; Delivery, or Technical
+          Support. Clear cases could go directly to a team, while unclear cases
+          would go to Manual Review.
+        </p>
+        <p><strong>Question for the team.</strong> Which inquiry types should we
+          try first, and which should always go to a person?</p>
         <h3>Manual triage</h3>
         <figure>
           <a href="architecture/manual-triage.png">
@@ -110,6 +110,17 @@
           </a>
           <figcaption>The proposed workflow routes clear inquiries to a team and sends flagged cases to a supervisor for review and assignment.</figcaption>
         </figure>
+      </section>
+
+      <section aria-labelledby="proof-of-concept">
+        <h2 id="proof-of-concept">The MVP</h2>
+        <p>
+          The current prototype detects incoming test emails and forwards them
+          with their attachments to Manual Review. MLflow records each run.
+          The diagrams show the proposed routing design and how the agent could
+          evolve from there.
+        </p>
+        <p><a href="https://github.com/summonr/agentic-customer-complaint-handling">View the MVP repository on GitHub</a></p>
         <h3>MVP architecture</h3>
         <figure>
           <a href="architecture/mvp.png">
@@ -126,6 +137,61 @@
           </a>
           <figcaption>The roadmap shows where detection, OpenTSLM, and classification could evolve across versions.</figcaption>
         </figure>
+      </section>
+
+      <section aria-labelledby="business-case">
+        <h2 id="business-case">The business case</h2>
+        <p>
+          Faster handoffs could reduce the time inquiries spend waiting, and
+          fewer incorrect assignments could reduce staff rework. To estimate
+          the value, apply measured staff time savings to the pilot team's
+          inbox volume and compare it with setup and ongoing operating costs.
+        </p>
+        <h3 id="kpis">Proposed KPIs</h3>
+        <ul>
+          <li><strong>Time to handoff:</strong> time from email arrival to delivery to a team or Manual Review.</li>
+          <li><strong>Wrong-mailbox rate:</strong> share of automatically routed emails sent to the wrong team.</li>
+          <li><strong>Automation coverage:</strong> share of incoming emails routed directly to a team.</li>
+          <li><strong>Staff time per inquiry:</strong> time spent reading, assigning, reviewing, and correcting handoffs.</li>
+        </ul>
+        <p><strong>Questions for the team.</strong> What are the current inbox
+          volumes, staff costs, and triage times? What would integration,
+          model hosting, maintenance, and human review cost?</p>
+      </section>
+
+      <section aria-labelledby="business-pilot">
+        <h2 id="business-pilot">The business pilot</h2>
+        <p>
+          Ask a pilot support team to label a representative set of inquiries
+          and time its usual triage process. Run the agent on the same set and
+          record its proposed destinations while staff retain control of
+          delivery. If the routing results meet the agreed error limit, try a
+          small supervised rollout to measure actual staff time and rework.
+        </p>
+        <p>
+          The case is supported if the pilot reduces staff time and handoff
+          delays within the agreed error limit, and the estimated value exceeds
+          operating costs. If those criteria are missed, the pilot should show
+          whether to narrow the scope, revise the workflow, or stop.
+        </p>
+        <p><strong>Questions for the team.</strong> Which business and inbox
+          will we pilot with? What sample size, duration, and pass criteria
+          should we agree before starting?</p>
+      </section>
+
+      <section aria-labelledby="industrialization">
+        <h2 id="industrialization">Industrialization</h2>
+        <ul>
+          <li><strong>Scaling.</strong> What peak inbox volumes and handoff
+            times must the service support? How should it recover from backlogs
+            or failed deliveries?</li>
+          <li><strong>Infrastructure.</strong> Which mail platform and hosting
+            environment should we use? What access, retention, monitoring, and
+            fallback controls will be required?</li>
+          <li><strong>People.</strong> Who owns routing rules, reviews
+            exceptions, and responds to incidents? What training and feedback
+            process will support teams need?</li>
+        </ul>
       </section>
 
       <section aria-labelledby="performance">
