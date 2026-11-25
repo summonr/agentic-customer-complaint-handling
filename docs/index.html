@@ -31,6 +31,18 @@
       section + section {
         border-top: 1px solid #cbd5e1;
       }
+      figure {
+        margin: 0 0 2rem;
+      }
+      figure img {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto;
+      }
+      figcaption {
+        margin-top: 0.75rem;
+      }
       a {
         color: #075985;
       }
@@ -82,6 +94,38 @@
 
       <section aria-labelledby="proof-of-concept">
         <h2 id="proof-of-concept">Agentic AI proof of concept</h2>
+        <h3>Manual triage</h3>
+        <figure>
+          <a href="architecture/manual-triage.png">
+            <img src="architecture/manual-triage.png"
+              alt="A central mailbox feeds three teams through manually assigned shared inboxes." loading="lazy">
+          </a>
+          <figcaption>A common starting point is a shared inbox. Staff read each inquiry and choose which team should handle it before that team can reply.</figcaption>
+        </figure>
+        <h3>AI-assisted triage</h3>
+        <figure>
+          <a href="architecture/ai-assisted-triage.png">
+            <img src="architecture/ai-assisted-triage.png"
+              alt="Detection and classification feed a routing decision with a team route and a supervisor review route." loading="lazy">
+          </a>
+          <figcaption>The proposed workflow routes clear inquiries to a team and sends flagged cases to a supervisor for review and assignment.</figcaption>
+        </figure>
+        <h3>MVP architecture</h3>
+        <figure>
+          <a href="architecture/mvp.png">
+            <img src="architecture/mvp.png"
+              alt="An email server feeds an agent workflow with attachment detection, classification, and mailbox routing." loading="lazy">
+          </a>
+          <figcaption>The MVP design shows how the agent could check for attachments, add context, and choose a destination. The current prototype delivers every inquiry to Manual Review.</figcaption>
+        </figure>
+        <h3>Agent progression</h3>
+        <figure>
+          <a href="architecture/agent-progression.png">
+            <img src="architecture/agent-progression.png"
+              alt="The roadmap shows MVP, V2, and V3 columns for detection, OpenTSLM, and classification tools." loading="lazy">
+          </a>
+          <figcaption>The roadmap shows where detection, OpenTSLM, and classification could evolve across versions.</figcaption>
+        </figure>
       </section>
 
       <section aria-labelledby="performance">
