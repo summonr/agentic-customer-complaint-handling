@@ -16,6 +16,7 @@ from utilities.mailpit import ADDRESSES, wait_for_message, wait_for_routing
 SAMPLES = {
     "help": Path("sample_emails/help-request.eml"),
     "attachment": Path("sample_emails/help-request-with-attachment.eml"),
+    "health": Path("sample_emails/health-monitor-complaint.eml"),
 }
 
 

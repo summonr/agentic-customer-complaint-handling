@@ -1,0 +1,23 @@
+From: Sarah Chen <sarah@patient.test>
+To: complaints@demo.test
+Subject: Device tracking shows unusual heart rate pattern
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="health-data"
+
+--health-data
+Content-Type: text/plain; charset="utf-8"
+
+Hello,
+
+I've been using the medical device to monitor my heart rate for the past few days. The readings show some irregular patterns that concern me. I'm attaching the downloaded data from the past 10 minutes. Can someone review this and let me know if I should contact my doctor about these fluctuations?
+
+Thank you,
+Sarah
+
+--health-data
+Content-Type: text/csv; name="heart_rate_log.csv"
+Content-Disposition: attachment; filename="heart_rate_log.csv"
+Content-Transfer-Encoding: base64
+
+dGltZXN0YW1wLGhlYXJ0X3JhdGUsYmxvb2RfcHJlc3N1cmVfc3lzdG9saWMKMjAyNC0xMS0yNlQxMDowMDowMCw3MiwxMjAKMjAyNC0xMS0yNlQxMDowMTowMCw3NSwxMTgKMjAyNC0xMS0yNlQxMDowMjowMCw3MywxMjIKMjAyNC0xMS0yNlQxMDowMzowMCw3NiwxMjUKMjAyNC0xMS0yNlQxMDowNDowMCw3OCwxMjAKMjAyNC0xMS0yNlQxMDowNTowMCw3NCwxMTkKMjAyNC0xMS0yNlQxMDowNjowMCw3NywxMjMKMjAyNC0xMS0yNlQxMDowNzowMCw3OSwxMjQKMjAyNC0xMS0yNlQxMDowODowMCw3NiwxMjEKMjAyNC0xMS0yNlQxMDowOTowMCw3NSwxMjAK
+--health-data--
