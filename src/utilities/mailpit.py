@@ -119,6 +119,38 @@ def detect_email(rfc_message_id: str | None = None) -> str | None:
     return message["ID"] if message else None
 
 
+def read_attachment_info(message_id: str) -> dict | None:
+    """Read attachment metadata from Central complaint. Returns dict or None if no attachments."""
+    try:
+        message = request("central", "GET", message_path(message_id)).json()
+        attachments = message.get("Attachments", [])
+        if not attachments:
+            return None
+        att = attachments[0]
+        return {
+            "id": att.get("ID"),
+            "filename": att.get("FileName"),
+            "size": att.get("Size"),
+            "mime_type": att.get("ContentType"),
+        }
+    except Exception:
+        return None
+
+
+def get_attachment_data(message_id: str) -> bytes | None:
+    """Download attachment content from Central. Returns bytes or None on failure."""
+    try:
+        message = request("central", "GET", message_path(message_id)).json()
+        attachments = message.get("Attachments", [])
+        if not attachments:
+            return None
+        att_id = attachments[0]["ID"]
+        response = request("central", "GET", f"{message_path(message_id)}/attachment/{att_id}")
+        return response.content
+    except Exception:
+        return None
+
+
 def forward(message_id: str, mailbox: Mailbox = "review") -> tuple[Mailbox, str]:
     """Copy a Central complaint and its attachments to a destination mailbox.
 
